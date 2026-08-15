@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>江西THO5-秋水鸣歌再宴 原曲听力</title>
+    <!--保留-->
+    <style>
+    .diff_card{
+        display: flex;
+        flex-direction: column;
+        margin: 20px;
+    }
+    label{
+        width: 30%;
+        border: 2px solid #dce6ed;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background-color: lightgrey;
+        cursor: pointer;
+    }
+    body{
+        background-color:#f0f7fc;
+    }
+    .mode_card{
+        display: flex;
+        margin:20px;
+    }
+    .start_button{
+        margin: 30px;
+        padding: 10px;
+        border-radius: 12px;
+        background-color: lightcyan;
+    }
+    .start_button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .opt-correct { border-color: #36a87a !important; background: #d5f0e0 !important; }
+    .opt-wrong { border-color: #d45a6a !important; background: #fce4e8 !important; }
+
+    </style>
+</head>
+
+<body>
+    <h1>原曲听力测试</h1>
+<!--设置面板-->
+<div id="setupPanel">
+    <div class="diff_card">   <!--难度选择-->
+    <label>
+        <input type="radio" name="difficulty" value="E">Easy
+    </label>
+    <label>
+        <input type="radio" name="difficulty" value="N">Normal
+    </label>
+   <label>
+       <input type="radio" name="difficulty" value="H">Hard
+   </label>
+    <label>
+        <input type="radio" name="difficulty" value="L">Lunatic
+    </label>
+</div>
+    <div class="mode_card">  <!--模式选择-->
+
+    <label>
+        <input type="checkbox" name="endlessRun">开启无尽模式
+    </label>
+    </div>
+    <button type="button" class="start_button">开始游戏</button>
+</div>
+
+    <!--游戏面板-->
+    <div id="gamePanel" style="display: none;">
+        <div id="scorePlay">得分:0</div>
+        <div id="progressPlaying">第1题</div>
+        <button type="button" class="play_button">播放</button>
+        <div id="optionsContainer"></div>
+        <button type="button" id="backToMenuBtn" style="display: none; margin-top: 20px; padding: 12px 30px; border: none; border-radius: 12px; background: #4a6a80; color: white; font-size: 16px; cursor: pointer;">
+            返回主菜单
+        </button>
+    </div>
+</body>
+
+<script src="song_database.js"></script>    <!--调用曲目数据库 -->
+<script>
+    <!-- 按钮相关 -->
+    const startButton =document.querySelector(".start_button");
+    const diffButton = document.querySelectorAll('input[name="difficulty"]');
+    const endlessRunCheckbox = document.querySelector('input[name="endlessRun"]');
+
+    <!--计分相关-->
+    let score = 0;          // 总得分
+    let wrongStreak = 0;    // 当前连续错误次数
+    let questionCount = 0;  // 当前题目序号（方便展示）
+    let timerId = null;     // 用来存储定时器，以便提前终止（后面用到）
+
+    <!--曲目相关-->
+    let correctAnswer=null;
+    const allSongs = [
+        ...song_database.Scarlet_Devil,
+        ...song_database.Perfect_Cherry,
+        ...song_database.Imperishable_Night
+    ];
+
+    function updateStartButton() {
+        let isSelected = false;  // 默认没人被选中
+
+        // 遍历所有难度按钮，检查有没有一个被勾选
+        for (let btn of diffButton) {
+            if (btn.checked) {
+                isSelected = true;
+                break;  // 只要找到一个被选中的，就立刻停止循环
+            }
+        }
+        // 如果 isSelected 为 true，禁用属性设为 false（启用按钮）
+        // 如果 isSelected 为 false，禁用属性设为 true（禁用按钮）
+        startButton.disabled = !isSelected;
+    }
+    updateStartButton();
+    for (let btn of diffButton) {
+        btn.addEventListener('change', updateStartButton);
+    }
+    let currentDiff =null;
+    startButton.addEventListener('click',function (){
+        for(let btn of diffButton){
+            if(btn.checked){
+                currentDiff=btn.value;
+                break;
+            }
+        }
+       let gameMode=endlessRunCheckbox.checked?'endless' : 'standard';
+        document.getElementById('setupPanel').style.display = 'none';
+        document.getElementById('gamePanel').style.display = 'block';
+        function loadQuestion(){
+            questionCount++;  // 新增：题号+1
+            document.getElementById('progressPlaying').textContent = '第 ' + questionCount + ' 题';  // 更新显示
+            const randomIndex =Math.floor(Math.random()*allSongs.length);
+            const correctSong =allSongs[randomIndex];
+            correctAnswer=correctSong;
+            const otherSongs =allSongs.filter(song => song !=correctSong);
+            const shuffledOthers =otherSongs.sort(() =>Math.random() -0.5);
+            const distractors = shuffledOthers.slice(0, 3);
+            const allOptions = [correctSong, ...distractors];
+            const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
+            const container = document.getElementById('optionsContainer');
+            container.style.display = 'block';  // 确保容器可以被看见
+            container.innerHTML = '';           // 清空旧内容
+            document.querySelector('.play_button').style.display='block';
+            for (let song of shuffledOptions) {
+                const btn = document.createElement('button');
+                btn.textContent = song.name;
+                // 把歌曲对象存到按钮的自定义属性里（方便比对）
+                btn.dataset.songName = song.name;
+
+                // 基础样式（先写死内联，方便你一眼看清）
+                btn.style.display = 'block';
+                btn.style.width = '100%';
+                btn.style.padding = '12px';
+                btn.style.margin = '6px 0';
+                btn.style.border = '2px solid #dce6ed';
+                btn.style.borderRadius = '10px';
+                btn.style.background = 'white';
+                btn.style.cursor = 'pointer';
+                btn.style.fontSize = '16px';
+
+                // ----- 核心点击逻辑 -----
+                btn.addEventListener('click', function() {
+                    // 1) 防止重复点击
+                    const allBtns = container.querySelectorAll('button');
+                    allBtns.forEach(b => b.disabled = true);
+
+                    // 2) 高亮显示正确答案（绿色）—— 这部分可以循环
+                    allBtns.forEach(b => {
+                        if (b.dataset.songName === correctSong.name) {
+                            b.classList.add('opt-correct');
+                        }
+                    });
+
+                    // 3) 判断对错（只执行一次！）
+                    const isCorrect = (this.dataset.songName === correctSong.name);
+
+                    if (isCorrect) {
+                        score++;
+                        wrongStreak = 0;
+                        console.log('✅ 答对了！当前得分:', score);
+                    } else {
+                        wrongStreak++;
+                        this.classList.add('opt-wrong');  // 只把用户点的标红
+                        console.log('❌ 答错了，正确答案是：', correctSong.name);
+                        console.log('你还有', 4 - wrongStreak, '次机会');
+                    }
+
+                    // 4) 更新计分显示
+                    document.getElementById('scorePlay').textContent = '得分: ' + score;
+
+                    // 5) 检查是否连错 4 次
+                    if (wrongStreak >= 4) {
+                        clearTimeout(timerId);
+                        allBtns.forEach(b => b.disabled = true);
+                        document.getElementById('scorePlay').textContent ='💀 游戏结束！得分: ' + score;
+                        document.getElementById('backToMenuBtn').style.display ='block';
+                        document.getElementById('optionsContainer').style.display='none';
+                        document.querySelector('.play_button').style.display='none';
+                        return;  // 不进入 setTimeout
+                    }
+
+                    // 6) 1.5 秒后自动跳转
+                    timerId = setTimeout(() => {
+                        loadQuestion();
+                    }, 1500);
+                });
+
+                container.appendChild(btn);
+            }
+        }
+        loadQuestion(); <!--首次调用问题函数-->
+    });
+    const play_button =document.querySelector('.play_button');
+    play_button.addEventListener('click',function (){
+        if(correctAnswer){
+        alert("正确答案是"+correctAnswer.name);
+        }else{
+            alert("有问题");
+        }
+
+    });
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    backToMenuBtn.addEventListener('click',function (){
+        clearTimeout(timerId);
+        score =0;
+        wrongStreak=0;
+        questionCount=0;
+        correctAnswer=null;
+
+        document.getElementById('gamePanel').style.display='none';
+        document.getElementById('setupPanel').style.display='block';
+
+        document.getElementById('optionsContainer').innerHTML='';
+        document.getElementById('backToMenuBtn').style.display = 'none';      // 隐藏返回按钮
+        document.getElementById('scorePlay').textContent = '得分: 0';          // 重置得分显示
+        document.getElementById('progressPlaying').textContent = '第1题';      // 重置题号
+
+        updateStartButton();
+    });
+
+</script>
+</html>
