@@ -34,19 +34,24 @@ git clone https://github.com/EveningTwiKnight/Touhou-Songs-Guessing.git
 cd Touhou-Songs-Guessing
 ```
 或者直接选择下载压缩包，解压后即可。
+另外，受Github文件上传大小的限制，对应得曲库文件请从此网盘链接下载，或者联系本人私发给你，并将文件夹解压到存储本程序对应的文件夹下。
+
+链接：https://pan.quark.cn/s/a9e154f65dd2
+
+为了确保程序正常运行，请查看下文提及的项目结构，并与你的文件夹内容作比对，确保一致。
 
 ### 2.运行
 克隆完成之后，直接双击index.html文件即可运行
 
 ##项目结构
 
-tho-hearing-test/
+Touhou-Songs-Guessing/
 ├── index.html
 ├── song_database.js
 ├── audio/
-│   ├── hong/
-│   ├── yao/
-│   └── yong/
+│   ├── Scarlet_Devil/
+│   ├── Perfect_Cherry/
+│   └── Imperishable_Night/
 └── README.md
 
 ##致谢
