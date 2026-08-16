@@ -4,7 +4,7 @@
 
 ## 背景
 
-本项目灵感来源于 2026 年江西 THO 5- 秋水鸣歌再宴（东方ip限定的同人展）线下活动中的“原曲听力”互动环节。本人以学习为目的，从零开始独立复刻了其核心玩法。
+本项目灵感来源于 2026 年江西THO5 秋水鸣歌再宴（东方ip限定的同人展）线下活动中的“原曲听力”互动环节。本人以学习为目的，从零开始独立复刻了其核心玩法。
 
 ## 功能特性
 
@@ -31,7 +31,7 @@
 
 ```bash
 git clone https://github.com/EveningTwiKnight/Touhou-Songs-Guessing.git
-cd tho-hearing-test
+cd Touhou-Songs-Guessing
 ```
 ### 2.运行
 克隆完成之后，直接双击index.html文件即可运行
