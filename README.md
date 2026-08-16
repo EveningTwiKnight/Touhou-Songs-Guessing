@@ -33,6 +33,8 @@
 git clone https://github.com/EveningTwiKnight/Touhou-Songs-Guessing.git
 cd Touhou-Songs-Guessing
 ```
+或者直接选择下载压缩包，解压后即可。
+
 ### 2.运行
 克隆完成之后，直接双击index.html文件即可运行
 
