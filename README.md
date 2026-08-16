@@ -37,7 +37,7 @@ cd Touhou-Songs-Guessing
 
 另外，受Github文件上传大小的限制，对应得曲库文件请从此网盘链接下载，或者联系本人私发给你，并将文件夹解压到存储本程序对应的文件夹下。
 
-链接：https://pan.quark.cn/s/a9e154f65dd2
+链接：https://pan.quark.cn/s/3c79dc93910a
 
 为了确保程序正常运行，请查看下文提及的项目结构，并与你的文件夹内容作比对，确保一致。
 
@@ -45,15 +45,76 @@ cd Touhou-Songs-Guessing
 克隆完成之后，直接双击index.html文件即可运行
 
 ##项目结构
+```
+│  index.html
+│  song_database.js
+│      
+└─audio
+    ├─Imperishable_Night
+    │      ending.mp3
+    │      final_spell.mp3
+    │      last_word.mp3
+    │      staff_roll.mp3
+    │      stage1_boss.mp3
+    │      stage1_mid.mp3
+    │      stage2_boss.mp3
+    │      stage2_mid.mp3
+    │      stage3_boss.mp3
+    │      stage3_mid.mp3
+    │      stage4_boss_marisa.mp3
+    │      stage4_boss_reimu.mp3
+    │      stage4_mid.mp3
+    │      stage5_boss.mp3
+    │      stage5_mid.mp3
+    │      stage6A_boss.mp3
+    │      stage6B_boss.mp3
+    │      stage6_mid.mp3
+    │      stageEX_boss.mp3
+    │      stageEX_mid.mp3
+    │      title.mp3
+    │      
+    ├─Perfect_Cherry
+    │      ending.mp3
+    │      staff_roll.mp3
+    │      stage1_boss.mp3
+    │      stage1_mid.mp3
+    │      stage2_boss.mp3
+    │      stage2_mid.mp3
+    │      stage3_boss.mp3
+    │      stage3_mid.mp3
+    │      stage4_boss.mp3
+    │      stage4_mid.mp3
+    │      stage5_boss.mp3
+    │      stage5_mid.mp3
+    │      stage6_bossA.mp3
+    │      stage6_bossB.mp3
+    │      stage6_mid.mp3
+    │      stageEX_boss.mp3
+    │      stageEX_mid.mp3
+    │      stagePH_boss.mp3
+    │      stagePH_mid.mp3
+    │      title.mp3
+    │      
+    └─Scarlet_Devil
+            ending.mp3
+            staff_roll.mp3
+            stage1_boss.mp3
+            stage1_mid.mp3
+            stage2_boss.mp3
+            stage2_mid.mp3
+            stage3_boss.mp3
+            stage3_mid.mp3ll
+            stage4_boss.mp3
+            stage4_mid.mp3
+            stage5_boss.mp3
+            stage5_mid.mp3
+            stage6_boss.mp3
+            stage6_mid.mp3
+            stageEX_boss.mp3
+            stageEX_mid.mp3
+            title.mp3
+```            
 
-Touhou-Songs-Guessing/
-├── index.html
-├── song_database.js
-├── audio/
-│   ├── Scarlet_Devil/
-│   ├── Perfect_Cherry/
-│   └── Imperishable_Night/
-└── README.md
 
 ##致谢
 上海爱丽丝幻乐团  —— 原曲音乐版权方
