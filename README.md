@@ -34,6 +34,7 @@ git clone https://github.com/EveningTwiKnight/Touhou-Songs-Guessing.git
 cd Touhou-Songs-Guessing
 ```
 或者直接选择下载压缩包，解压后即可。
+
 另外，受Github文件上传大小的限制，对应得曲库文件请从此网盘链接下载，或者联系本人私发给你，并将文件夹解压到存储本程序对应的文件夹下。
 
 链接：https://pan.quark.cn/s/a9e154f65dd2
