@@ -1,126 +1,70 @@
 # 东方Project 原曲听力测试
 
-基于 Web 的交互式音乐听力训练工具。玩家收听随机截取的原曲片段，从四个选项中选出对应的曲目名称。
+一个纯前端的「听音猜曲」小游戏：随机播放《东方Project》原作 MIDI 的一个片段，玩家从四个选项里选出正确的曲名。
 
-## 背景
+不加载任何音色库（.sf2），直接用 **Web Audio API** 合成声音：
 
-本项目灵感来源于 2026 年江西THO5 秋水鸣歌再宴（东方ip限定的同人展）线下活动中的“原曲听力”互动环节。本人以学习为目的，从零开始独立复刻了其核心玩法。
+- 旋律声部使用 `OscillatorNode` 方波；
+- 打击乐（GM 通道 10）使用噪声与振荡器合成鼓声（Kick、Snare、Hi-Hat、Tom、Cymbal 等）。
 
-## 功能特性
+## 怎么玩（电脑小白也能一键启动）
 
-- 四种难度：Easy / Normal / Hard / Lunatic，控制播放时长（6s / 5s / 3s / 1.5s）
-- 两种游戏模式：
-  - 标准模式：共 7 题，答错 4 题即失败
-  - 无尽模式：前 7 题规则同上，通关后无限继续，直至连续答错 4 题
-- 音频片段随机截取，每次起始位置不同
-- 支持自定义曲库（修改 `song_database.js` 即可）
-- 本地运行，无需服务器
+### Windows 用户（推荐，无需安装任何东西）
 
-## 技术栈
+1. 下载本项目并解压。
+2. **双击 `启动游戏.bat`**。
+3. 会自动打开浏览器进入游戏。
 
-| 技术 | 用途 |
-| --- | --- |
-| HTML5 | 页面结构 |
-| CSS3 | 样式主题 |
-| JavaScript (ES6) | 游戏逻辑与音频控制 |
-| Web Audio API | 音频加载与播放 |
+原理：脚本用 Windows 自带的 PowerShell 在本地起了一个小服务器，然后自动打开游戏页面。**保持那个黑窗口开启**，关掉它游戏服务器就会停止。
 
-## 快速开始
+### macOS / Linux 用户
 
-### 1. 克隆仓库
+在项目目录执行：
 
 ```bash
-git clone https://github.com/EveningTwiKnight/Touhou-Songs-Guessing.git
-cd Touhou-Songs-Guessing
+python3 -m http.server 8000
 ```
-或者直接选择下载压缩包，解压后即可。
 
-另外，受Github文件上传大小的限制，对应得曲库文件请从此网盘链接下载，或者联系本人私发给你，并将文件夹解压到存储本程序对应的文件夹下。
+然后访问 `http://localhost:8000/index.html`。
 
-链接：https://pan.quark.cn/s/3c79dc93910a
+> 为什么不能直接双击 `index.html`？
+> 因为浏览器出于安全限制，会禁止网页用 `fetch` 读取本地 `.mid` 文件，所以必须通过本地服务器打开。
 
-为了确保程序正常运行，请查看下文提及的项目结构，并与你的文件夹内容作比对，确保一致。
+## 玩法
 
-### 2.运行
-克隆完成之后，直接双击index.html文件即可运行
+1. 选择难度（Easy / Normal / Hard / Lunatic，对应 6 / 5 / 3 / 1.5 秒片段）。
+2. 可选开启「无尽模式」。
+3. 点击「开始游戏」后，会随机播放一段 MIDI 片段。
+4. 从四个曲名中选出正确答案；答完 7 题结算得分。
 
-## 项目结构
+## 文件结构
+
 ```
-│  index.html
-│  song_database.js
-│      
-└─audio
-    ├─Imperishable_Night
-    │      ending.mp3
-    │      final_spell.mp3
-    │      last_word.mp3
-    │      staff_roll.mp3
-    │      stage1_boss.mp3
-    │      stage1_mid.mp3
-    │      stage2_boss.mp3
-    │      stage2_mid.mp3
-    │      stage3_boss.mp3
-    │      stage3_mid.mp3
-    │      stage4_boss_marisa.mp3
-    │      stage4_boss_reimu.mp3
-    │      stage4_mid.mp3
-    │      stage5_boss.mp3
-    │      stage5_mid.mp3
-    │      stage6A_boss.mp3
-    │      stage6B_boss.mp3
-    │      stage6_mid.mp3
-    │      stageEX_boss.mp3
-    │      stageEX_mid.mp3
-    │      title.mp3
-    │      
-    ├─Perfect_Cherry
-    │      ending.mp3
-    │      staff_roll.mp3
-    │      stage1_boss.mp3
-    │      stage1_mid.mp3
-    │      stage2_boss.mp3
-    │      stage2_mid.mp3
-    │      stage3_boss.mp3
-    │      stage3_mid.mp3
-    │      stage4_boss.mp3
-    │      stage4_mid.mp3
-    │      stage5_boss.mp3
-    │      stage5_mid.mp3
-    │      stage6_bossA.mp3
-    │      stage6_bossB.mp3
-    │      stage6_mid.mp3
-    │      stageEX_boss.mp3
-    │      stageEX_mid.mp3
-    │      stagePH_boss.mp3
-    │      stagePH_mid.mp3
-    │      title.mp3
-    │      
-    └─Scarlet_Devil
-            ending.mp3
-            staff_roll.mp3
-            stage1_boss.mp3
-            stage1_mid.mp3
-            stage2_boss.mp3
-            stage2_mid.mp3
-            stage3_boss.mp3
-            stage3_mid.mp3ll
-            stage4_boss.mp3
-            stage4_mid.mp3
-            stage5_boss.mp3
-            stage5_mid.mp3
-            stage6_boss.mp3
-            stage6_mid.mp3
-            stageEX_boss.mp3
-            stageEX_mid.mp3
-            title.mp3
-```            
+.
+├── index.html            # 游戏主页面（含 MIDI 解析与 Web Audio 合成引擎）
+├── song_database.js      # 曲目数据库（曲名 ↔ .mid 文件路径）
+├── 启动游戏.bat           # Windows 一键启动（双击运行）
+├── server.ps1            # 本地服务器脚本（由 .bat 自动调用）
+└── audio/
+    ├── Scarlet_Devil/    # 东方红魔乡（17 首 .mid）
+    ├── Perfect_Cherry/   # 东方妖妖梦（20 首 .mid）
+    └── Imperishable_Night/ # 东方永夜抄（21 首 .mid）
+```
 
+## 第三方依赖与许可
 
+本仓库本身不打包任何第三方库源码，均通过 CDN 在运行时加载：
 
-## 致谢
-#### 上海爱丽丝幻乐团  —— 原曲音乐版权方
-#### 江西THO空想豫章筹办组  —— 提供线下活动场景与灵感
-#### 以及我的所有好朋友们，感谢你们对我的精神支持！
+- **[midi-parser-js](https://github.com/colxi/midi-parser-js)**（作者：colxi，v4.0.4）
+  - 用途：解析 MIDI 文件。
+  - 许可证：**GPL-3.0**（copyleft）。
+  - 加载方式：`https://cdn.jsdelivr.net/npm/midi-parser-js@4.0.4/src/main.js`
+  - ⚠️ 注意：GPL 是传染性许可证。本项目**仅通过 CDN 引用、未将该库源码纳入本仓库**；如需把库文件打包进本项目，请遵守 GPL-3.0 条款（随附许可证文本、提供源码），并评估对自身代码许可证的影响。
 
-## 声明
-本项目仅供同人文化交流与学习使用。所有音乐版权归上海爱丽丝幻乐团所有，请勿将音频文件用于商业用途。
+- **[Google Fonts](https://fonts.google.com/)：Shippori Mincho / Noto Serif JP**
+  - 用途：页面字体。
+  - 许可证：**SIL Open Font License 1.1**。
+
+## 音乐版权声明
+
+本项目中收录的 MIDI 曲目为《东方Project》系列游戏音乐，原作者为 **ZUN（上海アリス幻樂団）**。这些文件仅用于个人学习与非商业用途，版权归原作者所有。
