@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>东方Project原曲听力</title>
-    <!--保留-->
     <style>
         /* ===== 全局重置 ===== */
         * {
@@ -11,6 +11,9 @@
             padding: 0;
             box-sizing: border-box;
         }
+        /* Vue 完成挂载前隐藏模板，避免闪现 {{ }} 原始文本 */
+        [v-cloak] { display: none; }
+
         body {
             font-family: 'Shippori Mincho', 'Noto Serif JP', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', 'Georgia', 'Times New Roman', serif;
             background:
@@ -29,7 +32,7 @@
         /* ===== 主容器（玻璃卡片） ===== */
         #app {
             width: 100%;
-            max-width: 720px;
+            max-width: 900px;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -54,7 +57,7 @@
         .subhead {
             text-align: center;
             font-size: 13px;
-            color: rgba(255, 255, 255, 0.78);   /* 白色点缀 */
+            color: rgba(255, 255, 255, 0.78);
             border-bottom: 1px solid rgba(92, 219, 138, 0.12);
             padding-bottom: 16px;
             margin-bottom: 20px;
@@ -135,43 +138,36 @@
 
         /* ===== 模式选择（与难度卡片风格统一，未选中灰色） ===== */
         .mode_card {
-            margin: 12px 0 0;
+            margin: 0;
         }
         .mode_card label {
-            /* 和 .diff_card label 保持一致 */
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 2px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.12);   /* 灰色边框 */
+            border: 1px solid rgba(255, 255, 255, 0.12);
             padding: 12px 18px;
             border-radius: 14px;
-            background: rgba(255, 255, 255, 0.02);          /* 非常淡的灰色背景 */
+            background: rgba(255, 255, 255, 0.02);
             cursor: pointer;
             transition: 0.25s;
-            color: rgba(255, 255, 255, 0.3);                /* 灰色文字 */
+            color: rgba(255, 255, 255, 0.3);
             font-weight: 500;
             width: 100%;
             font-family: inherit;
             font-size: 16px;
             text-align: left;
         }
-
-        /* 悬停时微微提亮 */
         .mode_card label:hover {
             border-color: rgba(255, 255, 255, 0.25);
             background: rgba(255, 255, 255, 0.05);
         }
-
-        /* 当复选框被选中 → 变成绿色主题（和难度卡片一致） */
         .mode_card label:has(input:checked) {
             border-color: #5cdb8a;
             background: rgba(92, 219, 138, 0.12);
             color: #c8e8d4;
             box-shadow: 0 0 24px rgba(92, 219, 138, 0.04);
         }
-
-        /* 复选框本身：小而精致，和主题统一 */
         .mode_card label input[type="checkbox"] {
             accent-color: #5cdb8a;
             width: 16px;
@@ -180,8 +176,6 @@
             cursor: pointer;
             flex-shrink: 0;
         }
-
-        /* 模式名称 + 小字 */
         .mode_card label .mode-name {
             font-weight: 600;
             font-size: 1rem;
@@ -194,6 +188,17 @@
             margin-top: -4px;
             margin-bottom: 2px;
         }
+
+        /* ===== 玩法说明小字 ===== */
+        .game-hint {
+            margin: 18px 0 14px;
+            font-size: 12.5px;
+            line-height: 1.7;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+        }
+
         /* ===== 开始按钮 ===== */
         .start_button {
             width: 100%;
@@ -234,6 +239,34 @@
             margin: 6px 0 14px;
         }
 
+        /* ===== 生命值（右上角爱心） ===== */
+        .game-hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .lives-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .lives-heart {
+            font-size: 16px;
+            line-height: 1;
+            filter: drop-shadow(0 0 3px rgba(212, 90, 106, 0.35));
+        }
+        /* 仅剩 1 点生命时轻微上下晃动，增加紧张感 */
+        .lives-shake {
+            animation: livesShake 0.6s ease-in-out infinite;
+        }
+        @keyframes livesShake {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-2px); }
+        }
+
         /* ===== 播放按钮 ===== */
         .play_button {
             display: inline-block;
@@ -252,10 +285,7 @@
             border-color: #5cdb8a;
         }
 
-        /* ===== 选项按钮（补全） ===== */
-        .option-btn {
-            /* 已在上面与 label 合并定义 */
-        }
+        /* ===== 选项按钮 ===== */
         .option-btn:disabled {
             cursor: default;
             opacity: 0.7;
@@ -275,20 +305,58 @@
 
         /* ===== 返回按钮 ===== */
         #backToMenuBtn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(92, 219, 138, 0.15);
-            color: #8fdfb0;
+            margin-top: 20px;
             padding: 12px 30px;
-            border-radius: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #4a6a80;
+            color: #fff;
+            font-size: 16px;
             cursor: pointer;
             transition: 0.2s;
-            margin-top: 16px;
         }
         #backToMenuBtn:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: #5b829e;
         }
 
-        /* ===== 设置面板和游戏面板切换 ===== */
+        /* ===== 设置面板左右两栏布局 ===== */
+        .setup_columns {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+        .setup_col {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .setup_col .panel-title {
+            margin: 0;
+        }
+
+        /* 选项卡稍大一点：加大内边距与字号 */
+        .diff_card label,
+        .mode_card label {
+            padding: 14px 20px;
+        }
+        .diff_card label .diff-name,
+        .mode_card label .mode-name {
+            font-size: 1.05rem;
+        }
+        .diff_card label .diff-meta,
+        .mode_card label .mode-meta {
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 620px) {
+            .setup_columns {
+                flex-direction: column;
+            }
+        }
+
+        /* ===== 面板切换 ===== */
         #setupPanel, #gamePanel {
             transition: opacity 0.3s;
         }
@@ -296,697 +364,761 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=Noto+Serif+JP:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- midi-parser-js：解析 MIDI 文件，暴露全局 MidiParser -->
     <script src="https://cdn.jsdelivr.net/npm/midi-parser-js@4.0.4/src/main.js"></script>
+    <!-- Vue 3 全局构建：暴露全局 Vue，无需打包工具 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.38/dist/vue.global.prod.js"></script>
 </head>
 
 <body>
 
-<!--设置面板-->
-    <div id="app">
-        <h1>东方Project原曲听力测试</h1>
-        <div class="subhead">～ Guess the Song.</div>
-<div id="setupPanel">
-    <div class="diff_card">   <!--难度选择-->
-    <label>
-        <input type="radio" name="difficulty" value="E">
-        <span class="diff-name">Easy</span>
-        <span class="diff-meta">🎵 播放6 秒片段</span>
-    </label>
-    <label>
-        <input type="radio" name="difficulty" value="N">
-        <span class="diff-name">Normal</span>
-        <span class="diff-meta">🎵 播放5 秒片段</span>
-    </label>
-   <label>
-       <input type="radio" name="difficulty" value="H">
-       <span class="diff-name">Hard</span>
-       <span class="diff-meta">🎵 播放3 秒片段</span>
-   </label>
-    <label>
-        <input type="radio" name="difficulty" value="L">
-        <span class="diff-name">Lunatic</span>
-        <span class="diff-meta">🎵 播放1.5 秒片段</span>
-    </label>
+<div id="app" v-cloak>
+    <h1>东方Project原曲听力测试</h1>
+    <div class="subhead">～ Guess the Song.</div>
+
+    <!-- 设置面板（v-if 控制显示） -->
+    <div id="setupPanel" v-if="view === 'setup'">
+        <div class="setup_columns">
+            <!-- 左半：选择难度 + 开启无尽模式 -->
+            <div class="setup_col">
+                <div class="panel-title">选择难度</div>
+                <div class="diff_card">
+                    <!-- v-for 渲染难度选项；v-model 绑定选中的难度 -->
+                    <label v-for="d in difficulties" :key="d.value">
+                        <input type="radio" name="difficulty" :value="d.value" v-model="difficulty">
+                        <span class="diff-name">{{ d.name }}</span>
+                        <span class="diff-meta">{{ d.meta }}</span>
+                    </label>
+                </div>
+
+                <div class="mode_card">
+                    <!-- 无尽模式开关（布尔值 v-model） -->
+                    <label>
+                        <input type="checkbox" v-model="endlessRun">
+                        <span class="mode-name">开启无尽模式</span>
+                        <span class="mode-meta">前7题仍然是标准模式，通关后将继续游玩，直到生命归零</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 右半：选择作品 -->
+            <div class="setup_col">
+                <div class="panel-title">选择作品</div>
+                <div class="mode_card">
+                    <!-- 作品选择 复选框数组 v-model -->
+                    <label v-for="w in works" :key="w.value">
+                        <input type="checkbox" name="Work" :value="w.value" v-model="selectedWorks">
+                        <span class="mode-name">{{ w.name }}</span>
+                        <span class="mode-meta">{{ w.meta }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 玩法说明小字 -->
+        <p class="game-hint">🎧 玩法：选好难度与作品后开始，听一段随机旋律，从四个曲名中选出正确答案；标准模式共 7 题。</p>
+        <p class="game-hint">进入无尽模式后，答对一题恢复1生命值</p>
+        <!-- :disabled 由 canStart 计算属性决定（等价于原 updateStartButton） -->
+        <button type="button" class="start_button" :disabled="!canStart" @click="startGame">开始游戏</button>
+    </div>
+
+    <!-- 游戏面板 -->
+    <div id="gamePanel" v-else>
+        <div class="game-hud">
+            <div id="scorePlay">{{ scoreText }}</div>
+            <!-- 生命值爱心：仅剩 1 点时晃动 -->
+            <div class="lives-box" v-if="!isGameOver" :class="{ 'lives-shake': lives === 1 }">
+                <span class="lives-heart" v-for="(h, i) in hearts" :key="i">{{ h }}</span>
+            </div>
+        </div>
+        <div id="progressPlaying">{{ progressText }}</div>
+        <button type="button" class="play_button" v-if="!isGameOver" @click="replay">播放</button>
+        <div id="optionsContainer" v-if="!isGameOver">
+            <!-- v-for 渲染选项按钮；:class 动态高亮对错 -->
+            <button
+                type="button"
+                v-for="song in options"
+                :key="song.file"
+                class="option-btn"
+                :class="optionClass(song)"
+                :disabled="answered"
+                @click="answer(song)"
+            >{{ song.name }}</button>
+        </div>
+        <button type="button" id="backToMenuBtn" v-if="isGameOver" @click="backToMenu">返回主菜单</button>
+    </div>
 </div>
-    <div class="mode_card">  <!--模式选择-->
 
-    <label>
-        <input type="checkbox" name="endlessRun">
-        <span class="mode-name">开启无尽模式</span>
-        <span class="mode-meta">前7题仍然是标准模式，通关后将继续游玩，直到连错4题</span>
-    </label>
-    </div>
-    <button type="button" class="start_button">开始游戏</button>
+<!-- Vue 加载失败的兜底提示 -->
+<div id="vueFallback" class="subhead" style="display:none; color:#f0a0aa; border:none; padding:24px;">
+    ⚠️ 无法加载 Vue.js（可能是网络 / CDN 问题），请检查网络后刷新。
 </div>
 
-    <!--游戏面板-->
-    <div id="gamePanel" style="display: none;">
-        <div id="scorePlay">得分:0</div>
-        <div id="progressPlaying">第1题</div>
-        <button type="button" class="play_button">播放</button>
-        <div id="optionsContainer"></div>
-        <button type="button" id="backToMenuBtn" style="display: none; margin-top: 20px; padding: 12px 30px; border: none; border-radius: 12px; background: #4a6a80; color: white; font-size: 16px; cursor: pointer;">
-            返回主菜单
-        </button>
-    </div>
-    </div>
-</body>
-
-<script src="song_database.js"></script>    <!--调用曲目数据库 -->
+<script src="song_database.js"></script>
 <script>
-    <!-- 按钮相关 -->
-    const ui ={
-        startButton :document.querySelector(".start_button"),
-        diffButton : document.querySelectorAll('input[name="difficulty"]'),
-        endlessRunCheckbox : document.querySelector('input[name="endlessRun"]'),
-        setupPanel: document.getElementById('setupPanel'),
-        gamePanel: document.getElementById('gamePanel'),
-        scoreDisplay: document.getElementById('scorePlay'),
-        progressDisplay: document.getElementById('progressPlaying'),
-        optionsContainer: document.getElementById('optionsContainer'),
-        playBtn: document.querySelector('.play_button'),
-        backBtn: document.getElementById('backToMenuBtn'),
-        startBtn: document.querySelector('.start_button'),
-    };
+/* ==========================================================================
+ * 1. MIDI 播放引擎（纯 Web Audio 合成）
+ *    与 Vue 解耦：Vue 只负责界面与状态，音频引擎用普通对象保存内部状态，
+ *    不需要响应式，避免 Vue 去追踪大量音符对象造成性能浪费。
+ * ========================================================================== */
 
+// 音符编号 → 频率
+function midiToFreq(note) {
+    return 440 * Math.pow(2, (note - 69) / 12);
+}
+// GM 标准：0 起算的第 9 通道是打击乐通道
+function isPercussionChannel(channel) {
+    return channel === 9;
+}
 
-    <!--计分相关-->
-    const game ={
-        score : 0,          // 总得分
-        wrongStreak : 0,    // 当前连续错误次数
-        totalWrong : 0,     //记录总共错误的题目数量，只在前七题发挥作用
-        questionCount : 0,  // 当前题目序号（方便展示）
-        timerId : null ,    // 用来存储定时器，以便提前终止
-        correctAnswer:null, //正确答案
-        isGameOver:false, //判定是否改结束游戏
-        midiNotes:[],       // 当前题目曲目的音符数组
-        currentClip:null,   // 当前片段事件列表（相对时间）
-        currentOffset:0,    // 当前片段偏移量（秒）
-        clipDuration:-1,    // 片段时长（秒）
-    };
+const midi = {
+    ctx: null,
+    masterGain: null,
+    noiseBuffer: null,
+    notes: [],          // 当前曲目音符 [{start,end,note,velocity,channel}]
+    fullDuration: 0,    // 当前曲目总时长（秒）
+    schedule: [],       // 当前片段事件（相对时间）[{time,kind,note,velocity,channel}]
+    nextIndex: 0,
+    startCtxTime: 0,
+    clipDuration: 0,
+    timerId: null,
+    activeNotes: {},    // key = "channel:note" → [{osc, gain, peak}]
+    playing: false,
+};
 
-    const setup={
-        currentDiff : null,
-        gameMode :null
-    };
-    <!--曲目相关-->
-    const allSongs = [
-        ...song_database.Scarlet_Devil,
-        ...song_database.Perfect_Cherry,
-        ...song_database.Imperishable_Night
-    ];
+// 与「当前这一题」相关的音频状态（非响应式）
+const audioState = {
+    midiNotes: [],
+    currentClip: null,
+    currentOffset: 0,
+    clipDuration: -1,
+};
 
-    /* ================= MIDI 播放引擎（替代 MP3，纯 Web Audio 合成） ================= */
+function midiInit() {
+    if (midi.ctx) return midi.ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    midi.ctx = new AC();
+    midi.masterGain = midi.ctx.createGain();
+    midi.masterGain.gain.value = 0.25;
+    const comp = midi.ctx.createDynamicsCompressor();
+    comp.threshold.value = -14;
+    comp.knee.value = 24;
+    comp.ratio.value = 8;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.25;
+    midi.masterGain.connect(comp);
+    comp.connect(midi.ctx.destination);
+    return midi.ctx;
+}
 
-    // 音符编号 → 频率
-    function midiToFreq(note) {
-        return 440 * Math.pow(2, (note - 69) / 12);
+/* ---- 解析 MIDI：提取 Note On/Off 与 Tempo ---- */
+function extractEvents(parsed) {
+    const tempoEvents = [];
+    const noteEvents = [];
+    for (const track of parsed.track) {
+        if (!track || !Array.isArray(track.event)) continue;
+        let tick = 0;
+        for (const ev of track.event) {
+            tick += ev.deltaTime || 0;
+            if (ev.metaType === 0x51) { // Set Tempo
+                let uspq = 500000;
+                const d = ev.data;
+                if (Array.isArray(d) && d.length >= 3) uspq = (d[0] << 16) | (d[1] << 8) | (d[2] || 0);
+                else if (typeof d === 'number' && d > 0) uspq = d;
+                if (!uspq || uspq <= 0) uspq = 500000;
+                tempoEvents.push({ tick, uspq });
+            } else if (ev.type === 9) { // Note On（力度 0 视作 Note Off）
+                const d = Array.isArray(ev.data) ? ev.data : [];
+                if (d[0] == null) continue;
+                noteEvents.push({ tick, kind: d[1] > 0 ? 'on' : 'off', note: d[0], velocity: d[1], channel: ev.channel || 0 });
+            } else if (ev.type === 8) { // Note Off
+                const d = Array.isArray(ev.data) ? ev.data : [];
+                if (d[0] == null) continue;
+                noteEvents.push({ tick, kind: 'off', note: d[0], velocity: d[1] || 0, channel: ev.channel || 0 });
+            }
+        }
     }
-    // GM 标准：0 起算的第 9 通道是打击乐通道
-    function isPercussionChannel(channel) {
-        return channel === 9;
+    return { tempoEvents, noteEvents };
+}
+
+function buildSchedule(tempoEvents, noteEvents, tpq) {
+    if (!tpq || tpq <= 0) tpq = 480;
+    tempoEvents.sort((a, b) => a.tick - b.tick);
+    noteEvents.sort((a, b) => a.tick - b.tick);
+    const schedule = [];
+    let ti = 0, uspq = 500000, curTick = 0, curSec = 0;
+    for (const ne of noteEvents) {
+        while (ti < tempoEvents.length && tempoEvents[ti].tick <= ne.tick) {
+            const te = tempoEvents[ti];
+            curSec += ((te.tick - curTick) / tpq) * (uspq / 1e6);
+            curTick = te.tick;
+            uspq = (te.uspq && te.uspq > 0) ? te.uspq : uspq;
+            ti++;
+        }
+        const sec = curSec + ((ne.tick - curTick) / tpq) * (uspq / 1e6);
+        schedule.push({ time: sec, kind: ne.kind, note: ne.note, velocity: ne.velocity, channel: ne.channel });
     }
+    return schedule;
+}
 
-    const midi = {
-        ctx: null,
-        masterGain: null,
-        noiseBuffer: null,
-        notes: [],          // 当前曲目音符 [{start,end,note,velocity,channel}]
-        fullDuration: 0,    // 当前曲目总时长（秒）
-        schedule: [],       // 当前片段事件（相对时间）[{time,kind,note,velocity,channel}]
-        nextIndex: 0,
-        startCtxTime: 0,
-        clipDuration: 0,
-        timerId: null,
-        activeNotes: {},    // key = "channel:note" → [{osc, gain, peak}]
-        playing: false,
-    };
-
-    function midiInit() {
-        if (midi.ctx) return midi.ctx;
-        const AC = window.AudioContext || window.webkitAudioContext;
-        midi.ctx = new AC();
-        midi.masterGain = midi.ctx.createGain();
-        midi.masterGain.gain.value = 0.25;
-        const comp = midi.ctx.createDynamicsCompressor();
-        comp.threshold.value = -14;
-        comp.knee.value = 24;
-        comp.ratio.value = 8;
-        comp.attack.value = 0.003;
-        comp.release.value = 0.25;
-        midi.masterGain.connect(comp);
-        comp.connect(midi.ctx.destination);
-        return midi.ctx;
+function buildNotes(schedule) {
+    const notes = [], open = {};
+    for (const ev of schedule) {
+        const key = ev.channel + ':' + ev.note;
+        if (ev.kind === 'on') {
+            (open[key] || (open[key] = [])).push({ start: ev.time, note: ev.note, velocity: ev.velocity, channel: ev.channel });
+        } else {
+            const arr = open[key];
+            if (arr && arr.length) {
+                const n = arr.shift();
+                notes.push({ start: n.start, end: ev.time, note: n.note, velocity: n.velocity, channel: n.channel });
+            }
+        }
     }
+    for (const key in open) {
+        for (const n of open[key]) {
+            notes.push({ start: n.start, end: n.start + 0.25, note: n.note, velocity: n.velocity, channel: n.channel });
+        }
+    }
+    return notes;
+}
 
-    /* ---- 解析 MIDI：提取 Note On/Off 与 Tempo ---- */
-    function extractEvents(parsed) {
-        const tempoEvents = [];
-        const noteEvents = [];
-        for (const track of parsed.track) {
-            if (!track || !Array.isArray(track.event)) continue;
-            let tick = 0;
-            for (const ev of track.event) {
-                tick += ev.deltaTime || 0;
-                if (ev.metaType === 0x51) { // Set Tempo
-                    let uspq = 500000;
-                    const d = ev.data;
-                    if (Array.isArray(d) && d.length >= 3) uspq = (d[0] << 16) | (d[1] << 8) | (d[2] || 0);
-                    else if (typeof d === 'number' && d > 0) uspq = d;
-                    if (!uspq || uspq <= 0) uspq = 500000;
-                    tempoEvents.push({ tick, uspq });
-                } else if (ev.type === 9) { // Note On（力度 0 视作 Note Off）
-                    const d = Array.isArray(ev.data) ? ev.data : [];
-                    if (d[0] == null) continue;
-                    noteEvents.push({ tick, kind: d[1] > 0 ? 'on' : 'off', note: d[0], velocity: d[1], channel: ev.channel || 0 });
-                } else if (ev.type === 8) { // Note Off
-                    const d = Array.isArray(ev.data) ? ev.data : [];
-                    if (d[0] == null) continue;
-                    noteEvents.push({ tick, kind: 'off', note: d[0], velocity: d[1] || 0, channel: ev.channel || 0 });
+// 从音符列表切出 [offset, offset+duration)，返回相对时间事件流
+function buildClipSchedule(notes, offset, duration) {
+    const clip = [];
+    for (const n of notes) {
+        const cs = Math.max(n.start, offset);
+        const ce = Math.min(n.end, offset + duration);
+        if (cs < ce) {
+            clip.push({ time: cs - offset, kind: 'on', note: n.note, velocity: n.velocity, channel: n.channel });
+            clip.push({ time: ce - offset, kind: 'off', note: n.note, velocity: 0, channel: n.channel });
+        }
+    }
+    clip.sort((a, b) => a.time - b.time || (a.kind === 'on' ? -1 : 1));
+    return clip;
+}
+
+/* ---- 鼓组合成（GM 打击乐通道） ---- */
+function getNoiseBuffer(ctx) {
+    if (!midi.noiseBuffer) {
+        const len = Math.floor(ctx.sampleRate * 1.5);
+        midi.noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = midi.noiseBuffer.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    return midi.noiseBuffer;
+}
+function noiseSource(ctx) {
+    const src = ctx.createBufferSource();
+    src.buffer = getNoiseBuffer(ctx);
+    return src;
+}
+function drumVol(velocity) {
+    return Math.max(0.001, Math.min(1, velocity / 127) * 0.7);
+}
+function drumKick(ctx, when, vol) {
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, when);
+    osc.frequency.exponentialRampToValueAtTime(45, when + 0.12);
+    gain.gain.setValueAtTime(vol, when);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + 0.4);
+    osc.connect(gain); gain.connect(midi.masterGain);
+    osc.start(when); osc.stop(when + 0.45);
+}
+function drumSnare(ctx, when, vol) {
+    const osc = ctx.createOscillator(); osc.type = 'triangle';
+    osc.frequency.setValueAtTime(190, when);
+    const og = ctx.createGain();
+    og.gain.setValueAtTime(vol * 0.7, when);
+    og.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
+    osc.connect(og); og.connect(midi.masterGain);
+    osc.start(when); osc.stop(when + 0.15);
+    const noise = noiseSource(ctx);
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(vol * 0.6, when);
+    ng.gain.exponentialRampToValueAtTime(0.001, when + 0.18);
+    noise.connect(hp); hp.connect(ng); ng.connect(midi.masterGain);
+    noise.start(when); noise.stop(when + 0.2);
+}
+function drumSideStick(ctx, when, vol) {
+    const noise = noiseSource(ctx);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 1.5;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.8, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
+    noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
+    noise.start(when); noise.stop(when + 0.08);
+}
+function drumClap(ctx, when, vol) {
+    for (let i = 0; i < 3; i++) {
+        const t = when + i * 0.02;
+        const noise = noiseSource(ctx);
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 1;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(vol * (i === 0 ? 0.9 : 0.5), t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
+        noise.start(t); noise.stop(t + 0.06);
+    }
+}
+function drumHat(ctx, when, vol, open) {
+    const noise = noiseSource(ctx);
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.5, when);
+    const decay = open ? 0.55 : 0.07;
+    g.gain.exponentialRampToValueAtTime(0.001, when + decay);
+    noise.connect(hp); hp.connect(g); g.connect(midi.masterGain);
+    noise.start(when); noise.stop(when + decay + 0.05);
+}
+function drumTom(ctx, when, vol, note) {
+    const osc = ctx.createOscillator(); osc.type = 'sine';
+    const base = midiToFreq(note);
+    osc.frequency.setValueAtTime(base, when);
+    osc.frequency.exponentialRampToValueAtTime(base * 0.7, when + 0.15);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.9, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.32);
+    osc.connect(g); g.connect(midi.masterGain);
+    osc.start(when); osc.stop(when + 0.35);
+}
+function drumCymbal(ctx, when, vol) {
+    const noise = noiseSource(ctx);
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.55, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 1.3);
+    noise.connect(hp); hp.connect(g); g.connect(midi.masterGain);
+    noise.start(when); noise.stop(when + 1.35);
+}
+function drumShaker(ctx, when, vol) {
+    const noise = noiseSource(ctx);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000 + Math.random() * 2000; bp.Q.value = 0.8;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.45, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.09);
+    noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
+    noise.start(when); noise.stop(when + 0.11);
+}
+function drumPitched(ctx, when, vol, note) {
+    const osc = ctx.createOscillator(); osc.type = 'triangle';
+    osc.frequency.value = midiToFreq(note);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * 0.6, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.16);
+    osc.connect(g); g.connect(midi.masterGain);
+    osc.start(when); osc.stop(when + 0.18);
+}
+function playDrum(ctx, when, note, velocity) {
+    const vol = drumVol(velocity);
+    switch (note) {
+        case 35: case 36:                       drumKick(ctx, when, vol); break;
+        case 38: case 40:                       drumSnare(ctx, when, vol); break;
+        case 37:                                drumSideStick(ctx, when, vol); break;
+        case 39:                                drumClap(ctx, when, vol); break;
+        case 42: case 44:                       drumHat(ctx, when, vol, false); break;
+        case 46:                                drumHat(ctx, when, vol, true); break;
+        case 41: case 43: case 45:
+        case 47: case 48: case 50:
+        case 62: case 63: case 64:              drumTom(ctx, when, vol, note); break;
+        case 49: case 51: case 52:
+        case 53: case 55: case 57: case 59:     drumCymbal(ctx, when, vol); break;
+        case 54: case 56: case 69: case 70:
+        case 73: case 74: case 75:
+        case 78: case 79:                       drumShaker(ctx, when, vol); break;
+        default:                                drumPitched(ctx, when, vol, note);
+    }
+}
+
+/* ---- 发声与调度 ---- */
+function midiNoteOn(ctx, when, ev) {
+    if (isPercussionChannel(ev.channel)) { playDrum(ctx, when, ev.note, ev.velocity); return; }
+    const key = ev.channel + ':' + ev.note;
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = 'square'; // 旋律方波
+    osc.frequency.value = midiToFreq(ev.note);
+    const peak = 0.3 * (ev.velocity / 127);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(peak, when + 0.006);
+    osc.connect(gain); gain.connect(midi.masterGain);
+    osc.start(when);
+    (midi.activeNotes[key] || (midi.activeNotes[key] = [])).push({ osc, gain, peak });
+}
+function midiNoteOff(ctx, when, ev) {
+    const key = ev.channel + ':' + ev.note;
+    const arr = midi.activeNotes[key];
+    if (!arr || !arr.length) return;
+    const item = arr.shift();
+    const release = 0.09;
+    item.gain.gain.cancelScheduledValues(when);
+    item.gain.gain.setValueAtTime(Math.max(0.0001, item.peak), when);
+    item.gain.gain.linearRampToValueAtTime(0.0001, when + release);
+    item.osc.stop(when + release + 0.02);
+}
+function midiHasActive() {
+    for (const k in midi.activeNotes) if (midi.activeNotes[k].length) return true;
+    return false;
+}
+function midiForceStop() {
+    if (!midi.ctx) return;
+    const now = midi.ctx.currentTime;
+    for (const k in midi.activeNotes) {
+        for (const item of midi.activeNotes[k]) {
+            try { item.gain.gain.cancelScheduledValues(now); } catch (e) {}
+            try { item.gain.gain.setValueAtTime(0.0001, now); } catch (e) {}
+            try { item.gain.gain.linearRampToValueAtTime(0.0001, now + 0.05); } catch (e) {}
+            try { item.osc.stop(now + 0.08); } catch (e) {}
+        }
+    }
+    midi.activeNotes = {};
+}
+
+const LOOKAHEAD = 0.15;
+const TICK_MS = 40;
+function midiSchedulerTick() {
+    const ctx = midi.ctx;
+    const elapsed = ctx.currentTime - midi.startCtxTime;
+    while (midi.nextIndex < midi.schedule.length) {
+        const ev = midi.schedule[midi.nextIndex];
+        const when = midi.startCtxTime + ev.time;
+        if (when > ctx.currentTime + LOOKAHEAD) break;
+        if (ev.kind === 'on') midiNoteOn(ctx, when, ev);
+        else midiNoteOff(ctx, when, ev);
+        midi.nextIndex++;
+    }
+    if (midi.nextIndex >= midi.schedule.length) {
+        if (!midiHasActive()) midiFinish();
+        else if (elapsed > midi.clipDuration + 1.5) { midiForceStop(); midiFinish(); }
+    }
+}
+function midiStart() {
+    if (!midi.schedule.length) return;
+    midi.ctx = midiInit();
+    midi.nextIndex = 0;
+    midi.startCtxTime = midi.ctx.currentTime + 0.1;
+    midi.activeNotes = {};
+    midi.playing = true;
+    if (midi.timerId) clearInterval(midi.timerId);
+    midi.timerId = setInterval(midiSchedulerTick, TICK_MS);
+}
+function midiStop() {
+    if (midi.timerId) { clearInterval(midi.timerId); midi.timerId = null; }
+    midi.playing = false;
+    midiForceStop();
+}
+function midiFinish() {
+    if (midi.timerId) { clearInterval(midi.timerId); midi.timerId = null; }
+    midi.playing = false;
+    midi.activeNotes = {};
+}
+
+/* ---- 对外接口 ---- */
+async function loadMidiNotes(file) {
+    const resp = await fetch(file);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ' (' + file + ')');
+    const ab = await resp.arrayBuffer();
+    const parsed = MidiParser.parse(new Uint8Array(ab));
+    if (!parsed || !parsed.track) throw new Error('MIDI 解析失败');
+    const { tempoEvents, noteEvents } = extractEvents(parsed);
+    const fullSchedule = buildSchedule(tempoEvents, noteEvents, parsed.timeDivision || 480);
+    midi.notes = buildNotes(fullSchedule);
+    midi.fullDuration = fullSchedule.length ? fullSchedule[fullSchedule.length - 1].time : 0;
+    return midi.notes;
+}
+
+// 随机截取（无音符则重试）
+function makeRandomClip(notes, duration) {
+    if (!notes || !notes.length) return null;
+    const maxOffset = Math.max(0, midi.fullDuration - duration);
+    for (let i = 0; i < 60; i++) {
+        const offset = maxOffset > 0 ? Math.random() * maxOffset : 0;
+        const clip = buildClipSchedule(notes, offset, duration);
+        if (clip.some(e => e.kind === 'on')) return { offset, schedule: clip };
+    }
+    const n = notes[Math.floor(Math.random() * notes.length)];
+    const offset = Math.max(0, Math.min(n.start, maxOffset));
+    return { offset, schedule: buildClipSchedule(notes, offset, duration) };
+}
+
+// 播放某个片段（相对时间事件流）
+function playMidiClip(schedule, duration) {
+    midi.schedule = schedule;
+    midi.clipDuration = duration;
+    midiStart();
+}
+
+// 为当前题目随机生成并播放一个片段
+function buildAndPlayClip() {
+    if (!audioState.midiNotes || !audioState.midiNotes.length) return;
+    const r = makeRandomClip(audioState.midiNotes, audioState.clipDuration);
+    if (!r) return;
+    audioState.currentClip = r.schedule;
+    audioState.currentOffset = r.offset;
+    playMidiClip(audioState.currentClip, audioState.clipDuration);
+}
+
+// 重播当前题目已有的片段
+function replayCurrentClip() {
+    if (!audioState.currentClip || !audioState.currentClip.length) {
+        buildAndPlayClip();
+        return;
+    }
+    playMidiClip(audioState.currentClip, audioState.clipDuration);
+}
+
+/* ==========================================================================
+ * 2. Vue 应用
+ * ========================================================================== */
+
+let advanceTimer = null; // 答完一题后自动切到下一题的定时器（非响应式）
+
+if (window.Vue) {
+Vue.createApp({
+    data() {
+        return {
+            // 静态配置
+            difficulties: [
+                { value: 'E', name: 'Easy', meta: '🎵 播放6 秒片段' },
+                { value: 'N', name: 'Normal', meta: '🎵 播放5 秒片段' },
+                { value: 'H', name: 'Hard', meta: '🎵 播放3 秒片段' },
+                { value: 'L', name: 'Lunatic', meta: '🎵 播放1.5 秒片段' },
+            ],
+            works: [
+                { value: 'new', name: 'TH06-TH18', meta: '东方新作部分，自红魔乡开始到虹龙洞（永夜抄之后内容正在添加中）' },
+                { value: 'ancient', name: 'TH01-TH05', meta: '东方旧作部分，自灵异传开始到怪绮谈' },
+            ],
+
+            // 响应式状态
+            difficulty: null,        // 选中的难度 'E'|'N'|'H'|'L'
+            endlessRun: false,       // 无尽模式
+            selectedWorks: [],       // 选中的作品 'new' / 'ancient'
+            view: 'setup',           // 'setup' | 'game'
+            score: 0,
+            lives: 4,                // 剩余生命值（初始 4 点）
+            totalWrong: 0,           // 总错误次数（标准模式 7 题对 4 题判定用）
+            consecutiveCorrect: 0,   // 连续答对题数（用于无尽模式奖励）
+            bonusAwarded: false,     // 连续答对 4 题的奖励是否已发放（仅一次）
+            questionCount: 0,
+            isGameOver: false,
+            endMessage: '',
+            correctAnswer: null,     // 当前题目正确答案对象
+            wrongPick: null,         // 用户点错的那个选项
+            answered: false,         // 本题是否已作答
+            options: [],             // 当前题目的四个选项
+        };
+    },
+
+    computed: {
+        // 等价于原来的 selectWork：把选中的作品合并成 allSongs。
+        // 因为用 computed，selectedWorks 变化时会自动重新计算，且每次都是全新的数组，不会累积重复。
+        allSongs() {
+            const workMap = {
+                new: ['Scarlet_Devil', 'Perfect_Cherry', 'Imperishable_Night'],
+                ancient: ['Responsive_to_Prayers', 'Eastern_Wonderland', 'Dim_Dream', 'Lotus_Land_Story', 'Mystic_Square'],
+            };
+            const list = [];
+            for (const w of this.selectedWorks) {
+                for (const key of (workMap[w] || [])) {
+                    if (Array.isArray(song_database[key])) list.push(...song_database[key]);
                 }
             }
-        }
-        return { tempoEvents, noteEvents };
-    }
+            return list;
+        },
 
-    function buildSchedule(tempoEvents, noteEvents, tpq) {
-        if (!tpq || tpq <= 0) tpq = 480;
-        tempoEvents.sort((a, b) => a.tick - b.tick);
-        noteEvents.sort((a, b) => a.tick - b.tick);
-        const schedule = [];
-        let ti = 0, uspq = 500000, curTick = 0, curSec = 0;
-        for (const ne of noteEvents) {
-            while (ti < tempoEvents.length && tempoEvents[ti].tick <= ne.tick) {
-                const te = tempoEvents[ti];
-                curSec += ((te.tick - curTick) / tpq) * (uspq / 1e6);
-                curTick = te.tick;
-                uspq = (te.uspq && te.uspq > 0) ? te.uspq : uspq;
-                ti++;
+        // 等价于原来的 updateStartButton：难度 + 至少一个作品都选了才可开始
+        canStart() {
+            return this.difficulty !== null && this.selectedWorks.length > 0;
+        },
+
+        scoreText() {
+            if (this.isGameOver) return this.endMessage + '\n得分：' + this.score;
+            return '得分: ' + this.score;
+        },
+
+        progressText() {
+            if (this.isGameOver) return '';
+            return '第 ' + this.questionCount + ' 题';
+        },
+
+        // 生命值爱心数组：❤️=剩余生命，💛=无尽奖励的第 5 颗心，🤍=归零时的灰心
+        hearts() {
+            // 生命归 0：保留 1 颗灰心，避免全空
+            if (this.lives === 0) return ['🤍'];
+
+            const arr = [];
+            const red = Math.min(this.lives, 4);   // 普通生命（最多 4 颗红心）
+            for (let i = 0; i < red; i++) arr.push('❤️');
+            if (this.lives > 4) arr.push('💛');     // 无尽奖励的第 5 颗金心
+            return arr;
+        },
+    },
+
+    methods: {
+        startGame() {
+            if (!this.canStart) return;
+            midiInit();
+            if (midi.ctx.state === 'suspended') midi.ctx.resume().catch(() => {});
+            this.resetGame();
+            this.view = 'game';
+            this.loadQuestion();
+        },
+
+        resetGame() {
+            clearTimeout(advanceTimer);
+            midiStop();
+            this.score = 0;
+            this.lives = 4;
+            this.totalWrong = 0;
+            this.consecutiveCorrect = 0;
+            this.bonusAwarded = false;
+            this.questionCount = 0;
+            this.isGameOver = false;
+            this.endMessage = '';
+            this.correctAnswer = null;
+            this.wrongPick = null;
+            this.answered = false;
+            this.options = [];
+            audioState.midiNotes = [];
+            audioState.currentClip = null;
+            audioState.currentOffset = 0;
+        },
+
+        loadQuestion() {
+            if (this.isGameOver) return;
+            this.questionCount++;
+            this.answered = false;
+            this.wrongPick = null;
+            this.correctAnswer = null;
+            this.options = [];
+
+            const songs = this.allSongs; // computed 属性，读一次
+            if (!songs.length) {
+                alert('曲目列表为空，请返回主菜单重新选择作品。');
+                this.backToMenu();
+                return;
             }
-            const sec = curSec + ((ne.tick - curTick) / tpq) * (uspq / 1e6);
-            schedule.push({ time: sec, kind: ne.kind, note: ne.note, velocity: ne.velocity, channel: ne.channel });
-        }
-        return schedule;
-    }
 
-    function buildNotes(schedule) {
-        const notes = [], open = {};
-        for (const ev of schedule) {
-            const key = ev.channel + ':' + ev.note;
-            if (ev.kind === 'on') {
-                (open[key] || (open[key] = [])).push({ start: ev.time, note: ev.note, velocity: ev.velocity, channel: ev.channel });
-            } else {
-                const arr = open[key];
-                if (arr && arr.length) {
-                    const n = arr.shift();
-                    notes.push({ start: n.start, end: ev.time, note: n.note, velocity: n.velocity, channel: n.channel });
-                }
-            }
-        }
-        for (const key in open) {
-            for (const n of open[key]) {
-                notes.push({ start: n.start, end: n.start + 0.25, note: n.note, velocity: n.velocity, channel: n.channel });
-            }
-        }
-        return notes;
-    }
+            const correctSong = songs[Math.floor(Math.random() * songs.length)];
+            this.correctAnswer = correctSong;
 
-    // 从音符列表切出 [offset, offset+duration)，返回相对时间事件流（只改时间轴，音调不变）
-    function buildClipSchedule(notes, offset, duration) {
-        const clip = [];
-        for (const n of notes) {
-            const cs = Math.max(n.start, offset);
-            const ce = Math.min(n.end, offset + duration);
-            if (cs < ce) {
-                clip.push({ time: cs - offset, kind: 'on', note: n.note, velocity: n.velocity, channel: n.channel });
-                clip.push({ time: ce - offset, kind: 'off', note: n.note, velocity: 0, channel: n.channel });
-            }
-        }
-        clip.sort((a, b) => a.time - b.time || (a.kind === 'on' ? -1 : 1));
-        return clip;
-    }
+            // 从其它曲子里随机抽 3 个干扰项
+            const others = songs.filter(s => s !== correctSong);
+            const distractors = others.sort(() => Math.random() - 0.5).slice(0, 3);
+            this.options = [correctSong, ...distractors].sort(() => Math.random() - 0.5);
 
-    /* ---- 鼓组合成（GM 打击乐通道） ---- */
-    function getNoiseBuffer(ctx) {
-        if (!midi.noiseBuffer) {
-            const len = Math.floor(ctx.sampleRate * 1.5);
-            midi.noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
-            const d = midi.noiseBuffer.getChannelData(0);
-            for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-        }
-        return midi.noiseBuffer;
-    }
-    function noiseSource(ctx) {
-        const src = ctx.createBufferSource();
-        src.buffer = getNoiseBuffer(ctx);
-        return src;
-    }
-    function drumVol(velocity) {
-        return Math.max(0.001, Math.min(1, velocity / 127) * 0.7);
-    }
-    function drumKick(ctx, when, vol) {
-        const osc = ctx.createOscillator(), gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, when);
-        osc.frequency.exponentialRampToValueAtTime(45, when + 0.12);
-        gain.gain.setValueAtTime(vol, when);
-        gain.gain.exponentialRampToValueAtTime(0.001, when + 0.4);
-        osc.connect(gain); gain.connect(midi.masterGain);
-        osc.start(when); osc.stop(when + 0.45);
-    }
-    function drumSnare(ctx, when, vol) {
-        const osc = ctx.createOscillator(); osc.type = 'triangle';
-        osc.frequency.setValueAtTime(190, when);
-        const og = ctx.createGain();
-        og.gain.setValueAtTime(vol * 0.7, when);
-        og.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
-        osc.connect(og); og.connect(midi.masterGain);
-        osc.start(when); osc.stop(when + 0.15);
-        const noise = noiseSource(ctx);
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500;
-        const ng = ctx.createGain();
-        ng.gain.setValueAtTime(vol * 0.6, when);
-        ng.gain.exponentialRampToValueAtTime(0.001, when + 0.18);
-        noise.connect(hp); hp.connect(ng); ng.connect(midi.masterGain);
-        noise.start(when); noise.stop(when + 0.2);
-    }
-    function drumSideStick(ctx, when, vol) {
-        const noise = noiseSource(ctx);
-        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 1.5;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.8, when);
-        g.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
-        noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
-        noise.start(when); noise.stop(when + 0.08);
-    }
-    function drumClap(ctx, when, vol) {
-        for (let i = 0; i < 3; i++) {
-            const t = when + i * 0.02;
-            const noise = noiseSource(ctx);
-            const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 1;
-            const g = ctx.createGain();
-            g.gain.setValueAtTime(vol * (i === 0 ? 0.9 : 0.5), t);
-            g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-            noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
-            noise.start(t); noise.stop(t + 0.06);
-        }
-    }
-    function drumHat(ctx, when, vol, open) {
-        const noise = noiseSource(ctx);
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.5, when);
-        const decay = open ? 0.55 : 0.07;
-        g.gain.exponentialRampToValueAtTime(0.001, when + decay);
-        noise.connect(hp); hp.connect(g); g.connect(midi.masterGain);
-        noise.start(when); noise.stop(when + decay + 0.05);
-    }
-    function drumTom(ctx, when, vol, note) {
-        const osc = ctx.createOscillator(); osc.type = 'sine';
-        const base = midiToFreq(note);
-        osc.frequency.setValueAtTime(base, when);
-        osc.frequency.exponentialRampToValueAtTime(base * 0.7, when + 0.15);
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.9, when);
-        g.gain.exponentialRampToValueAtTime(0.001, when + 0.32);
-        osc.connect(g); g.connect(midi.masterGain);
-        osc.start(when); osc.stop(when + 0.35);
-    }
-    function drumCymbal(ctx, when, vol) {
-        const noise = noiseSource(ctx);
-        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.55, when);
-        g.gain.exponentialRampToValueAtTime(0.001, when + 1.3);
-        noise.connect(hp); hp.connect(g); g.connect(midi.masterGain);
-        noise.start(when); noise.stop(when + 1.35);
-    }
-    function drumShaker(ctx, when, vol) {
-        const noise = noiseSource(ctx);
-        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000 + Math.random() * 2000; bp.Q.value = 0.8;
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.45, when);
-        g.gain.exponentialRampToValueAtTime(0.001, when + 0.09);
-        noise.connect(bp); bp.connect(g); g.connect(midi.masterGain);
-        noise.start(when); noise.stop(when + 0.11);
-    }
-    function drumPitched(ctx, when, vol, note) {
-        const osc = ctx.createOscillator(); osc.type = 'triangle';
-        osc.frequency.value = midiToFreq(note);
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(vol * 0.6, when);
-        g.gain.exponentialRampToValueAtTime(0.001, when + 0.16);
-        osc.connect(g); g.connect(midi.masterGain);
-        osc.start(when); osc.stop(when + 0.18);
-    }
-    function playDrum(ctx, when, note, velocity) {
-        const vol = drumVol(velocity);
-        switch (note) {
-            case 35: case 36:                       drumKick(ctx, when, vol); break;
-            case 38: case 40:                       drumSnare(ctx, when, vol); break;
-            case 37:                                drumSideStick(ctx, when, vol); break;
-            case 39:                                drumClap(ctx, when, vol); break;
-            case 42: case 44:                       drumHat(ctx, when, vol, false); break;
-            case 46:                                drumHat(ctx, when, vol, true); break;
-            case 41: case 43: case 45:
-            case 47: case 48: case 50:
-            case 62: case 63: case 64:              drumTom(ctx, when, vol, note); break;
-            case 49: case 51: case 52:
-            case 53: case 55: case 57: case 59:     drumCymbal(ctx, when, vol); break;
-            case 54: case 56: case 69: case 70:
-            case 73: case 74: case 75:
-            case 78: case 79:                       drumShaker(ctx, when, vol); break;
-            default:                                drumPitched(ctx, when, vol, note);
-        }
-    }
+            // 难度 → 片段时长
+            const diffToClip = { E: 6, N: 5, H: 3, L: 1.5 };
+            audioState.clipDuration = diffToClip[this.difficulty] || -1;
 
-    /* ---- 发声与调度 ---- */
-    function midiNoteOn(ctx, when, ev) {
-        if (isPercussionChannel(ev.channel)) { playDrum(ctx, when, ev.note, ev.velocity); return; }
-        const key = ev.channel + ':' + ev.note;
-        const osc = ctx.createOscillator(), gain = ctx.createGain();
-        osc.type = 'square'; // 旋律方波
-        osc.frequency.value = midiToFreq(ev.note);
-        const peak = 0.3 * (ev.velocity / 127);
-        gain.gain.setValueAtTime(0.0001, when);
-        gain.gain.linearRampToValueAtTime(peak, when + 0.006);
-        osc.connect(gain); gain.connect(midi.masterGain);
-        osc.start(when);
-        (midi.activeNotes[key] || (midi.activeNotes[key] = [])).push({ osc, gain, peak });
-    }
-    function midiNoteOff(ctx, when, ev) {
-        const key = ev.channel + ':' + ev.note;
-        const arr = midi.activeNotes[key];
-        if (!arr || !arr.length) return;
-        const item = arr.shift();
-        const release = 0.09;
-        item.gain.gain.cancelScheduledValues(when);
-        item.gain.gain.setValueAtTime(Math.max(0.0001, item.peak), when);
-        item.gain.gain.linearRampToValueAtTime(0.0001, when + release);
-        item.osc.stop(when + release + 0.02);
-    }
-    function midiHasActive() {
-        for (const k in midi.activeNotes) if (midi.activeNotes[k].length) return true;
-        return false;
-    }
-    function midiForceStop() {
-        if (!midi.ctx) return;
-        const now = midi.ctx.currentTime;
-        for (const k in midi.activeNotes) {
-            for (const item of midi.activeNotes[k]) {
-                try { item.gain.gain.cancelScheduledValues(now); } catch (e) {}
-                try { item.gain.gain.setValueAtTime(0.0001, now); } catch (e) {}
-                try { item.gain.gain.linearRampToValueAtTime(0.0001, now + 0.05); } catch (e) {}
-                try { item.osc.stop(now + 0.08); } catch (e) {}
-            }
-        }
-        midi.activeNotes = {};
-    }
+            // 停止上一题可能还在播放的声音
+            midiStop();
 
-    const LOOKAHEAD = 0.15;
-    const TICK_MS = 40;
-    function midiSchedulerTick() {
-        const ctx = midi.ctx;
-        const elapsed = ctx.currentTime - midi.startCtxTime;
-        while (midi.nextIndex < midi.schedule.length) {
-            const ev = midi.schedule[midi.nextIndex];
-            const when = midi.startCtxTime + ev.time;
-            if (when > ctx.currentTime + LOOKAHEAD) break;
-            if (ev.kind === 'on') midiNoteOn(ctx, when, ev);
-            else midiNoteOff(ctx, when, ev);
-            midi.nextIndex++;
-        }
-        if (midi.nextIndex >= midi.schedule.length) {
-            if (!midiHasActive()) midiFinish();
-            else if (elapsed > midi.clipDuration + 1.5) { midiForceStop(); midiFinish(); }
-        }
-    }
-    function midiStart() {
-        if (!midi.schedule.length) return;
-        midi.ctx = midiInit();
-        midi.nextIndex = 0;
-        midi.startCtxTime = midi.ctx.currentTime + 0.1;
-        midi.activeNotes = {};
-        midi.playing = true;
-        if (midi.timerId) clearInterval(midi.timerId);
-        midi.timerId = setInterval(midiSchedulerTick, TICK_MS);
-    }
-    function midiStop() {
-        if (midi.timerId) { clearInterval(midi.timerId); midi.timerId = null; }
-        midi.playing = false;
-        midiForceStop();
-    }
-    function midiFinish() {
-        if (midi.timerId) { clearInterval(midi.timerId); midi.timerId = null; }
-        midi.playing = false;
-        midi.activeNotes = {};
-    }
-
-    /* ---- 对外接口 ---- */
-    async function loadMidiNotes(file) {
-        const resp = await fetch(file);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status + ' (' + file + ')');
-        const ab = await resp.arrayBuffer();
-        const parsed = MidiParser.parse(new Uint8Array(ab));
-        if (!parsed || !parsed.track) throw new Error('MIDI 解析失败');
-        const { tempoEvents, noteEvents } = extractEvents(parsed);
-        const fullSchedule = buildSchedule(tempoEvents, noteEvents, parsed.timeDivision || 480);
-        midi.notes = buildNotes(fullSchedule);
-        midi.fullDuration = fullSchedule.length ? fullSchedule[fullSchedule.length - 1].time : 0;
-        return midi.notes;
-    }
-
-    // 随机截取（无音符则重试）
-    function makeRandomClip(notes, duration) {
-        if (!notes || !notes.length) return null;
-        const maxOffset = Math.max(0, midi.fullDuration - duration);
-        for (let i = 0; i < 60; i++) {
-            const offset = maxOffset > 0 ? Math.random() * maxOffset : 0;
-            const clip = buildClipSchedule(notes, offset, duration);
-            if (clip.some(e => e.kind === 'on')) return { offset, schedule: clip };
-        }
-        const n = notes[Math.floor(Math.random() * notes.length)];
-        const offset = Math.max(0, Math.min(n.start, maxOffset));
-        return { offset, schedule: buildClipSchedule(notes, offset, duration) };
-    }
-
-    // 播放某个片段（相对时间事件流）
-    function playMidiClip(schedule, duration) {
-        midi.schedule = schedule;
-        midi.clipDuration = duration;
-        midiStart();
-    }
-
-    // 为当前题目随机生成并播放一个片段
-    function buildAndPlayClip() {
-        if (!game.midiNotes || !game.midiNotes.length) return;
-        const r = makeRandomClip(game.midiNotes, game.clipDuration);
-        if (!r) return;
-        game.currentClip = r.schedule;
-        game.currentOffset = r.offset;
-        playMidiClip(game.currentClip, game.clipDuration);
-    }
-
-    // 重播当前题目已有的片段（不重新随机，保持原玩法「再听一遍同一段」）
-    function replayCurrentClip() {
-        if (!game.currentClip || !game.currentClip.length) {
-            buildAndPlayClip();
-            return;
-        }
-        playMidiClip(game.currentClip, game.clipDuration);
-    }
-    function updateStartButton() {
-        let isSelected = false;  // 默认没人被选中
-
-        // 遍历所有难度按钮，检查有没有一个被勾选
-        for (let btn of ui.diffButton) {
-            if (btn.checked) {
-                isSelected = true;
-                break;  // 只要找到一个被选中的，就立刻停止循环
-            }
-        }
-        // 如果 isSelected 为 true，禁用属性设为 false（启用按钮）
-        // 如果 isSelected 为 false，禁用属性设为 true（禁用按钮）
-        ui.startButton.disabled = !isSelected;
-    }
-    updateStartButton();
-    for (let btn of ui.diffButton) {
-        btn.addEventListener('change', updateStartButton);
-    }
-    ui.startButton.addEventListener('click',function (){
-        for(let btn of ui.diffButton){
-            if(btn.checked){
-                setup.currentDiff=btn.value;
-                break;
-            }
-        }
-        setup.gameMode=ui.endlessRunCheckbox.checked?'endless' : 'standard';
-        // 在用户手势内创建并唤醒 AudioContext，保证后续 MIDI 能发声
-        midiInit();
-        if (midi.ctx.state === 'suspended') midi.ctx.resume().catch(() => {});
-        document.getElementById('setupPanel').style.display = 'none';
-        document.getElementById('gamePanel').style.display = 'block';
-
-
-
-
-        function loadQuestion(){
-            game.questionCount++;  // 新增：题号+1
-            ui.progressDisplay.textContent = '第 ' + game.questionCount + ' 题';  // 更新显示
-            const randomIndex =Math.floor(Math.random()*allSongs.length);
-            const correctSong =allSongs[randomIndex];
-            game.correctAnswer=correctSong;
-            const otherSongs =allSongs.filter(song => song !=correctSong);
-            const shuffledOthers =otherSongs.sort(() =>Math.random() -0.5);
-            const distractors = shuffledOthers.slice(0, 3);
-            const allOptions = [correctSong, ...distractors];
-            const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
-            const container = ui.optionsContainer;
-            container.style.display = 'block';  // 确保容器可以被看见
-            container.innerHTML = '';           // 清空旧内容
-            ui.playBtn.style.display='block';
-
-
-            //音频播放模块
-            const diffToClip ={'E':6,'N':5,'H':3,'L':1.5};
-            game.clipDuration =diffToClip[setup.currentDiff]||-1;
-            game.midiNotes = [];
-            game.currentClip = null;
-            game.currentOffset = 0;
-            midiStop();  // 停止上一题可能还在播放的声音
-
-            const songFile = game.correctAnswer.file;
-            loadMidiNotes(songFile).then((notes) => {
+            const file = correctSong.file;
+            loadMidiNotes(file).then((notes) => {
                 // 防止快速切题竞态：仅当仍是这道题时才播放
-                if (!game.correctAnswer || game.correctAnswer.file !== songFile) return;
-                game.midiNotes = notes;
-                console.log('🎵 MIDI 就绪：', songFile, '| 音符数', notes.length);
+                if (!this.correctAnswer || this.correctAnswer.file !== file) return;
+                audioState.midiNotes = notes;
                 buildAndPlayClip();
             }).catch((err) => {
                 console.error('加载 MIDI 失败:', err);
-                alert('MIDI 加载失败：' + err.message + '\n请用本地服务器打开本页（例如 python -m http.server）。');
+                alert('MIDI 加载失败：' + err.message + '\n请通过本地服务器或部署后的网站访问本页。');
             });
+        },
 
+        answer(song) {
+            if (this.answered || this.isGameOver) return;
+            this.answered = true;
 
+            const isCorrect = song === this.correctAnswer;
+            if (isCorrect) {
+                this.score++;
+                this.consecutiveCorrect++;
 
-            //生成选项
-            for (let song of shuffledOptions) {
-                const btn = document.createElement('button');
-                btn.textContent = song.name;
-                // 把歌曲对象存到按钮的自定义属性里
-                btn.dataset.songName = song.name;
-                btn.className = 'option-btn';
+                // 无尽模式：正式进入无尽（第 8 题起）后，答对回 1 点血（上限 4）
+                if (this.endlessRun && this.questionCount > 7 && this.lives < 4) {
+                    this.lives++;
+                }
 
-
-                // ----- 核心点击逻辑 -----
-                btn.addEventListener('click', function() {
-                    // 1) 防止重复点击
-                    const allBtns = container.querySelectorAll('button');
-                    allBtns.forEach(b => b.disabled = true);
-
-                    // 2) 高亮显示正确答案（绿色）
-                    allBtns.forEach(b => {
-                        if (b.dataset.songName === correctSong.name) {
-                            b.classList.add('opt-correct');
-                        }
-                    });
-
-                    // 3) 判断对错
-                    const isCorrect = (this.dataset.songName === correctSong.name);
-
-                    if (isCorrect) {
-                        game.score++;
-                        game.wrongStreak = 0;
-                        console.log('✅ 答对了！当前得分:', game.score);
-                    } else {
-                        game.wrongStreak++;
-                        game.totalWrong++;
-                        this.classList.add('opt-wrong');  // 只把用户点的标红
-                        console.log('❌ 答错了，正确答案是：', correctSong.name);
-                        console.log('你还有', 4 - game.wrongStreak, '次机会');
-                    }
-
-                    // 4) 更新计分显示
-                    ui.scoreDisplay.textContent = '得分: ' + game.score;
-                    midiStop();  // 停止播放
-
-                    // 5) 检查游戏是否应该结束
-                    let endMessage ='';
-                    if(setup.gameMode==='standard'){
-                        if(game.totalWrong>=4 &&game.questionCount===7){
-                            game.isGameOver=true;
-                            endMessage='💀游戏结束，闯关失败';
-                        }else if(game.questionCount>=7){
-                            game.isGameOver=true;
-                            endMessage='🎉游戏结束，你过关';
-                        }
-                    }else {
-                        if (game.questionCount <= 7) {
-                            if (game.totalWrong >= 4 &&game.questionCount===7) {
-                                game.isGameOver = true;
-                                endMessage = '💀游戏结束，挑战失败'
-                            }
-                            if (game.questionCount === 7 && game.totalWrong < 4) {
-                                console.log('✅ 前 7 题安全通过（当前连错计数：' + game.wrongStreak + '），进入无限模式！');
-                            }
-                        }else if (game.wrongStreak >= 4) {
-                            game.isGameOver=true;
-                            endMessage='💀 连续答错 4 题，挑战结束！';
-                        }
-                    }
-                    if(game.isGameOver){
-                        clearTimeout(game.timerId);
-                        allBtns.forEach(b => b.disabled = true);
-                        ui.scoreDisplay.textContent = endMessage +'\n得分：'+game.score;
-                        ui.backBtn.style.display = 'block';
-                        ui.progressDisplay.textContent='';
-                        ui.optionsContainer.style.display = 'none';
-                        ui.playBtn.style.display = 'none';
-                        return;  // 不进入 setTimeout
-                    }
-                    // 6) 1.5 秒后自动跳转
-                    game.timerId = setTimeout(() => {
-                        loadQuestion();
-                    }, 1500);
-                });
-                container.appendChild(btn);
+                // 无尽模式奖励：连续答对 4 题额外 +1 点血（4+1 形式，仅一次）
+                if (this.endlessRun && this.consecutiveCorrect >= 4 && !this.bonusAwarded && this.questionCount > 7) {
+                    this.bonusAwarded = true;
+                    this.lives++;
+                }
+            } else {
+                this.consecutiveCorrect = 0;
+                this.totalWrong++;
+                this.lives = Math.max(0, this.lives - 1);
+                this.wrongPick = song;
             }
+            midiStop();
+
+            this.endMessage = '';
+            if (!this.endlessRun) {
+                // 标准模式：固定 7 题，错满 4 题即失败（无回血）
+                if (this.totalWrong >= 4 && this.questionCount === 7) {
+                    this.isGameOver = true;
+                    this.endMessage = '💀游戏结束，闯关失败';
+                } else if (this.questionCount >= 7) {
+                    this.isGameOver = true;
+                    this.endMessage = '🎉游戏结束，你过关';
+                }
+            } else {
+                // 无尽模式：前 7 题仍是标准规则；第 8 题起按生命值判定
+                if (this.questionCount <= 7) {
+                    if (this.totalWrong >= 4 && this.questionCount === 7) {
+                        this.isGameOver = true;
+                        this.endMessage = '💀游戏结束，挑战失败';
+                    }
+                } else if (this.lives <= 0) {
+                    this.isGameOver = true;
+                    this.endMessage = '💀 生命值耗尽，挑战结束！';
+                }
+            }
+
+            if (this.isGameOver) {
+                clearTimeout(advanceTimer);
+                return;
+            }
+            advanceTimer = setTimeout(() => this.loadQuestion(), 1500);
+        },
+
+        replay() {
+            midiInit();
+            if (midi.ctx.state === 'suspended') midi.ctx.resume().catch(() => {});
+            if (!audioState.midiNotes || !audioState.midiNotes.length) {
+                alert('音频还在加载中，请稍候再点');
+                return;
+            }
+            replayCurrentClip();
+        },
+
+        backToMenu() {
+            this.resetGame();
+            this.view = 'setup';
+        },
+
+        // 根据作答情况返回高亮 class
+        optionClass(song) {
+            if (!this.answered) return '';
+            if (song === this.correctAnswer) return 'opt-correct';
+            if (song === this.wrongPick) return 'opt-wrong';
+            return '';
+        },
+    },
+}).mount('#app');
+}
+
+/* Vue 加载失败兜底 */
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (!window.Vue) {
+            const el = document.getElementById('vueFallback');
+            if (el) el.style.display = 'block';
         }
-        loadQuestion(); <!--首次调用问题函数-->
-    });
-
-    ui.playBtn.addEventListener('click', function () {
-        // 确保 AudioContext 已唤醒（点击属于用户手势）
-        midiInit();
-        if (midi.ctx.state === 'suspended') midi.ctx.resume().catch(() => {});
-        if (!game.midiNotes || !game.midiNotes.length) {
-            alert('音频还在加载中，请稍候再点');
-            return;
-        }
-        // 重新播放当前题目的同一个片段
-        replayCurrentClip();
-    });
-    const backToMenuBtn = document.getElementById('backToMenuBtn');
-    backToMenuBtn.addEventListener('click',function (){
-        clearTimeout(game.timerId);
-        midiStop();
-        game.score =0;
-        game.wrongStreak=0;
-        game.totalWrong=0;
-        game.questionCount=0;
-        game.isGameOver=false;
-        game.correctAnswer=null;
-
-        ui.gamePanel.style.display='none';
-        ui.setupPanel.style.display='block';
-
-        ui.optionsContainer.innerHTML='';
-        ui.backBtn.style.display = 'none';      // 隐藏返回按钮
-        ui.scoreDisplay.textContent = '得分: 0';          // 重置得分显示
-        ui.progressDisplay.textContent = '第1题';      // 重置题号
-
-        updateStartButton();
-    });
-
+    }, 1500);
+});
 </script>
+</body>
 </html>
